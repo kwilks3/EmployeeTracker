@@ -18,6 +18,7 @@
   "homepage": "https://github.com/kwilks3/EmployeeTracker#readme",
   "dependencies": {
     "inquirer": "^7.3.2",
+    "mysql": "^2.18.1",
     "mysql2": "^2.1.0"
   }
 }
