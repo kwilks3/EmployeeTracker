@@ -1,1 +1,3 @@
 # EmployeeTracker
+
+Employee tracker CLI
