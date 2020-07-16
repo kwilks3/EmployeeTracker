@@ -1,5 +1,6 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
+const cTable = require("console.table");
 
 // setting up connection to database
 var connection = mysql.createConnection({
@@ -45,6 +46,11 @@ function runPrompt() {
 }
 
 function addInfo() {
+  var roles = [];
+  connection.query("SELECT role.title, role.id FROM role", (err, res) => {
+    if (err) throw err;
+    res.forEach((titles) => roles.push(titles.title));
+  });
   inquirer
     .prompt([
       {
@@ -59,43 +65,33 @@ function addInfo() {
       },
       {
         name: "title",
-        type: "input",
+        type: "rawlist",
         message: "What is the employee's title?",
-      },
-      {
-        name: "salary",
-        type: "input",
-        message: "What is the employee's salary?",
+        choices: roles,
       },
     ])
     .then(function (response) {
-      var query = "INSERT INTO employee (first_name, last_name) VALUES (?, ?)";
-      var query2 = "INSERT INTO role (title, salary) VALUES(?,?)";
-      connection.query(query, [response.fName, response.lName], function (
+      var id = roles.findIndex((e) => e === response.title) + 1;
+      var query =
+        "INSERT INTO employee (first_name, last_name, role_id) VALUES (?, ?, ?)";
+      connection.query(query, [response.fName, response.lName, id], function (
         err,
         res
       ) {
-        if (err) {
-          throw err;
-        }
-      });
-      connection.query(query2, [response.title, response.salary], function (
-        err,
-        res
-      ) {
-        if (err) {
-          throw err;
-        }
+        if (err) throw err;
+        console.log("Added!");
+        runPrompt();
       });
     });
 }
 
 function viewInfo() {
-  var query2 =
+  var query3 =
     "SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id";
-  connection.query(query2, function (err, res) {
-    if (err) {
-      throw err;
-    } else console.table(res);
+  connection.query(query3, function (err, res) {
+    if (err) throw err;
+    console.log("Test");
   });
 }
+
+function updateInfo() {}
