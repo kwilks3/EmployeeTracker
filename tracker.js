@@ -34,7 +34,7 @@ function runPrompt() {
           addInfo();
           break;
 
-        case "View all departments, roles, employees":
+        case "View departments, roles, employees":
           viewInfo();
           break;
 
@@ -84,14 +84,13 @@ function addInfo() {
       });
     });
 }
-
 function viewInfo() {
   var query3 =
     "SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id";
   connection.query(query3, function (err, res) {
     if (err) throw err;
-    console.log("Test");
+    var table = cTable.getTable(res);
+    console.log(table);
+    runPrompt();
   });
 }
-
-function updateInfo() {}
