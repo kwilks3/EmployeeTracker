@@ -94,3 +94,21 @@ function viewInfo() {
     runPrompt();
   });
 }
+function updateInfo() {
+  var query4 =
+    "SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id";
+  var table = [];
+  connection.query(query4, function (err, res) {
+    if (err) throw err;
+    res.forEach((name) => table.push(name.first_name + " " + name.last_name));
+    // table.push(cTable.getTable(res));
+  });
+  inquirer.prompt([
+    {
+      name: "title",
+      type: "rawlist",
+      message: "Which employee's information would you like to change?",
+      choices: table,
+    },
+  ]);
+}
