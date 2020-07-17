@@ -16,17 +16,21 @@ connection.connect(function (err) {
   if (err) throw err;
   runPrompt();
 });
+// query to pull all information to be used to view and update employee info
+// create an array of employees
 var query3 =
   "SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id";
 connection.query(query3, function (err, res) {
   if (err) throw err;
   res.forEach((name) => table.push(name.first_name + " " + name.last_name));
 });
+// create an array of roles
 var roles = [];
 connection.query("SELECT role.title, role.id FROM role", (err, res) => {
   if (err) throw err;
   res.forEach((titles) => roles.push(titles.title));
 });
+// beginning of prompt to ask what they would like to do
 function runPrompt() {
   inquirer
     .prompt({
@@ -39,6 +43,7 @@ function runPrompt() {
         "Update employee roles",
       ],
     })
+    // based on the action different functions will run
     .then(function (response) {
       switch (response.action) {
         case "Add employees":
@@ -76,6 +81,7 @@ function addInfo() {
         choices: roles,
       },
     ])
+    // find the role id of the employees title then add that and the employee's name to a table
     .then(function (response) {
       var id = roles.findIndex((e) => e === response.title) + 1;
       var query =
@@ -90,6 +96,7 @@ function addInfo() {
       });
     });
 }
+// pull employee information then use console.table to make the output look better
 function viewInfo() {
   connection.query(query3, function (err, res) {
     if (err) throw err;
@@ -98,6 +105,7 @@ function viewInfo() {
     runPrompt();
   });
 }
+// allow user to update information using the array of employees
 function updateInfo() {
   inquirer
     .prompt([
