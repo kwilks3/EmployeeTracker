@@ -1,6 +1,7 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
 const cTable = require("console.table");
+var table = [];
 
 // setting up connection to database
 var connection = mysql.createConnection({
@@ -15,7 +16,17 @@ connection.connect(function (err) {
   if (err) throw err;
   runPrompt();
 });
-
+var query3 =
+  "SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id";
+connection.query(query3, function (err, res) {
+  if (err) throw err;
+  res.forEach((name) => table.push(name.first_name + " " + name.last_name));
+});
+var roles = [];
+connection.query("SELECT role.title, role.id FROM role", (err, res) => {
+  if (err) throw err;
+  res.forEach((titles) => roles.push(titles.title));
+});
 function runPrompt() {
   inquirer
     .prompt({
@@ -46,11 +57,6 @@ function runPrompt() {
 }
 
 function addInfo() {
-  var roles = [];
-  connection.query("SELECT role.title, role.id FROM role", (err, res) => {
-    if (err) throw err;
-    res.forEach((titles) => roles.push(titles.title));
-  });
   inquirer
     .prompt([
       {
@@ -85,8 +91,6 @@ function addInfo() {
     });
 }
 function viewInfo() {
-  var query3 =
-    "SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id";
   connection.query(query3, function (err, res) {
     if (err) throw err;
     var table = cTable.getTable(res);
@@ -95,20 +99,29 @@ function viewInfo() {
   });
 }
 function updateInfo() {
-  var query4 =
-    "SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id";
-  var table = [];
-  connection.query(query4, function (err, res) {
-    if (err) throw err;
-    res.forEach((name) => table.push(name.first_name + " " + name.last_name));
-    // table.push(cTable.getTable(res));
-  });
-  inquirer.prompt([
-    {
-      name: "title",
-      type: "rawlist",
-      message: "Which employee's information would you like to change?",
-      choices: table,
-    },
-  ]);
+  inquirer
+    .prompt([
+      {
+        name: "change",
+        type: "rawlist",
+        message: "Which employee's role would you like to change?",
+        choices: table,
+      },
+      {
+        name: "newRole",
+        type: "rawlist",
+        message: "What should their new role be?",
+        choices: roles,
+      },
+    ])
+    .then((response) => {
+      var newId = roles.findIndex((e) => e === response.newRole) + 1;
+      var first = response.change.split(" ", 1);
+      var query4 = `UPDATE employee  SET role_id = ? WHERE employee.first_name = ?;`;
+      connection.query(query4, [newId, first], function (err, res) {
+        if (err) throw err;
+        console.log("Updated!");
+        runPrompt();
+      });
+    });
 }
